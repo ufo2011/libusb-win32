@@ -158,7 +158,7 @@ IF EXIST !BUILD_DIR!*.pdb COPY /Y !BUILD_DIR!*.pdb "!CMDVAR_OUTDIR!" >NUL
 IF EXIST !BUILD_DIR!*.sys COPY /Y !BUILD_DIR!*.sys "!CMDVAR_OUTDIR!" >NUL
 IF EXIST !BUILD_DIR!*.dll COPY /Y !BUILD_DIR!*.dll "!CMDVAR_OUTDIR!" >NUL
 IF EXIST !BUILD_DIR!*.exe COPY /Y !BUILD_DIR!*.exe "!CMDVAR_OUTDIR!" >NUL
-IF EXIST !BUILD_DIR!libusb.lib COPY /Y !BUILD_DIR!libusb.lib "!CMDVAR_OUTDIR!" >NUL
+IF EXIST !BUILD_DIR!!PACKAGE_NAME!.lib COPY /Y !BUILD_DIR!!PACKAGE_NAME!.lib "!CMDVAR_OUTDIR!" >NUL
 
 CALL :DestroyErrorMarker
 
@@ -190,12 +190,12 @@ GOTO CMDEXIT
 	)
 	
 	IF /I "!CMDVAR_TESTSIGNING!" EQU "on" (
-		IF EXIST libusb0.sys CALL :SignFile libusb0.sys
-		IF EXIST libusb0.dll CALL :SignFile libusb0.dll
+		IF EXIST !DRIVER_NAME!.sys CALL :SignFile !DRIVER_NAME!.sys
+		IF EXIST !DRIVER_NAME!.dll CALL :SignFile !DRIVER_NAME!.dll
 	)
 
 	CALL :ClearError
-	IF EXIST !BUILD_DIR!libusb0.lib move !BUILD_DIR!libusb0.lib !BUILD_DIR!libusb.lib %~1
+	IF EXIST !BUILD_DIR!!DRIVER_NAME!.lib move !BUILD_DIR!!DRIVER_NAME!.lib !BUILD_DIR!!PACKAGE_NAME!.lib %~1
 GOTO :EOF
 
 :Build_Binaries
@@ -208,8 +208,8 @@ GOTO :EOF
 	:: 
 	:: build gcc lib 
 	:: 
-	CALL :BuildLib_GCC libusb_gcc.a libusb0.dll "!DIR_LIBUSB!libusb0.def"
-	CALL :SafeMove libusb_gcc.a "!PACKAGE_LIB_DIR!gcc\libusb.a"
+	CALL :BuildLib_GCC !PACKAGE_NAME!_gcc.a !DRIVER_NAME!.dll "!DIR_LIBUSB!!DRIVER_NAME!.def"
+	CALL :SafeMove !PACKAGE_NAME!_gcc.a "!PACKAGE_LIB_DIR!gcc\!PACKAGE_NAME!.a"
 	
 	POPD	
 
@@ -222,11 +222,11 @@ GOTO :EOF
 	CALL :SafeCopy "..\src\libusb_dyn.c" "!PACKAGE_LIB_DIR!dynamic\"
 	IF !BUILD_ERRORLEVEL! NEQ 0 GOTO CMDERROR
 	
-	CALL :SafeCopy "!PACKAGE_ROOT_DIR!gcc\libusb.a" "!PACKAGE_LIB_DIR!gcc\libusb.a" false
+	CALL :SafeCopy "!PACKAGE_ROOT_DIR!gcc\!PACKAGE_NAME!.a" "!PACKAGE_LIB_DIR!gcc\!PACKAGE_NAME!.a" false
 	IF !BUILD_ERRORLEVEL! NEQ 0 GOTO CMDERROR
 	
 	
-	CALL :SafeMove "!PACKAGE_BIN_DIR!!_RELEASE_OR_DEBUG_!\x86\libusb0.dll" "!PACKAGE_BIN_DIR!!_RELEASE_OR_DEBUG_!\x86\libusb0_x86.dll"
+	CALL :SafeMove "!PACKAGE_BIN_DIR!!_RELEASE_OR_DEBUG_!\x86\!DRIVER_NAME!.dll" "!PACKAGE_BIN_DIR!!_RELEASE_OR_DEBUG_!\x86\!DRIVER_NAME!_x86.dll"
 	IF !BUILD_ERRORLEVEL! NEQ 0 GOTO CMDERROR
 	CALL :SafeCopy "!DIR_LIBUSB_DDK!..\installer_license.txt" "!PACKAGE_ROOT_DIR!installer_license.txt"
 	CALL :TagEnv "!DIR_LIBUSB_DDK!..\!PACKAGE_BIN_NAME!-README.txt.in" "!PACKAGE_BIN_DIR!!PACKAGE_BIN_NAME!-README.txt"
@@ -248,17 +248,17 @@ GOTO :EOF
 	IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
 	
 	CALL :SafeCreateDir "!PACKAGE_LIB_DIR!%2\"
-	CALL :SafeMove "!_OUTDIR_!\libusb.lib" "!PACKAGE_LIB_DIR!%2\"
+	CALL :SafeMove "!_OUTDIR_!\!PACKAGE_NAME!.lib" "!PACKAGE_LIB_DIR!%2\"
 
 	:: Pre-sign everything
 	IF /I "!CMDVAR_SIGNFILE!" EQU "true" (
-		CALL :SignFile !_OUTDIR_!libusb0.dll sha256
+		CALL :SignFile !_OUTDIR_!!DRIVER_NAME!.dll sha256
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !_OUTDIR_!libusb0.sys sha256
+		CALL :SignFile !_OUTDIR_!!DRIVER_NAME!.sys sha256
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
 		CALL :SignFile !_OUTDIR_!install-filter.exe sha256
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !_OUTDIR_!libusb0.sys sha256
+		CALL :SignFile !_OUTDIR_!!DRIVER_NAME!.sys sha256
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
 		CALL :SignFile !_OUTDIR_!testlibusb.exe sha256
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
@@ -308,13 +308,13 @@ GOTO :EOF
 
 	:: Make package for microsoft upload
 	IF /I "!CMDVAR_SIGNFILE!" EQU "true" (
-		CALL :TagEnv "libusb0.inf.in" "!PACKAGE_BIN_DIR!Debug\libusb0.inf"
+		CALL :TagEnv "libusb0.inf.in" "!PACKAGE_BIN_DIR!Debug\!DRIVER_NAME!.inf"
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO CMDERROR
-		CALL :SafeCopy "!PACKAGE_BIN_DIR!Debug\libusb0.inf" "!PACKAGE_BIN_DIR!Release\libusb0.inf"
+		CALL :SafeCopy "!PACKAGE_BIN_DIR!Debug\!DRIVER_NAME!.inf" "!PACKAGE_BIN_DIR!Release\!DRIVER_NAME!.inf"
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO CMDERROR
 
 		:: Verify INF file
-		infverif /h "!PACKAGE_BIN_DIR!Release\libusb0.inf"
+		infverif /h "!PACKAGE_BIN_DIR!Release\!DRIVER_NAME!.inf"
 		IF !ERRORLEVEL! NEQ 0 SET BUILD_ERRORLEVEL=1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO CMDERROR
 
@@ -327,44 +327,44 @@ GOTO :EOF
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO CMDERROR
 
 		:: Create CAB file for submission
-		CALL :TagEnv "libusb0.ddf.in" "!PACKAGE_ROOT_DIR!libusb0.ddf"
+		CALL :TagEnv "libusb0.ddf.in" "!PACKAGE_ROOT_DIR!!DRIVER_NAME!.ddf"
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO CMDERROR
-		makecab /f !PACKAGE_ROOT_DIR!libusb0.ddf
+		makecab /f !PACKAGE_ROOT_DIR!!DRIVER_NAME!.ddf
 		IF !ERRORLEVEL! NEQ 0 SET BUILD_ERRORLEVEL=1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO CMDERROR
 
 		:: Sign cab file
-		CALL :SignFile !PACKAGE_ROOT_DIR!libusb0.cab sha256
+		CALL :SignFile !PACKAGE_ROOT_DIR!!DRIVER_NAME!.cab sha256
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
 
 		ECHO Submit package to microsoft and place result in package folder
 		PAUSE
 
 		:: Post-sign everything with SHA1 to allow win7 to work
-		CALL :SignFile !PACKAGE_BIN_DIR!Debug\x86\libusb0.sys sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Debug\x86\!DRIVER_NAME!.sys sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !PACKAGE_BIN_DIR!Debug\x86\libusb0_x86.dll sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Debug\x86\!DRIVER_NAME!_x86.dll sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !PACKAGE_BIN_DIR!Debug\amd64\libusb0.sys sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Debug\amd64\!DRIVER_NAME!.sys sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !PACKAGE_BIN_DIR!Debug\amd64\libusb0.dll sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Debug\amd64\!DRIVER_NAME!.dll sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !PACKAGE_BIN_DIR!Debug\arm64\libusb0.sys sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Debug\arm64\!DRIVER_NAME!.sys sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !PACKAGE_BIN_DIR!Debug\arm64\libusb0.dll sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Debug\arm64\!DRIVER_NAME!.dll sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
 
-		CALL :SignFile !PACKAGE_BIN_DIR!Release\x86\libusb0.sys sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Release\x86\!DRIVER_NAME!.sys sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !PACKAGE_BIN_DIR!Release\x86\libusb0_x86.dll sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Release\x86\!DRIVER_NAME!_x86.dll sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !PACKAGE_BIN_DIR!Release\amd64\libusb0.sys sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Release\amd64\!DRIVER_NAME!.sys sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !PACKAGE_BIN_DIR!Release\amd64\libusb0.dll sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Release\amd64\!DRIVER_NAME!.dll sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !PACKAGE_BIN_DIR!Release\arm64\libusb0.sys sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Release\arm64\!DRIVER_NAME!.sys sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
-		CALL :SignFile !PACKAGE_BIN_DIR!Release\arm64\libusb0.dll sha1
+		CALL :SignFile !PACKAGE_BIN_DIR!Release\arm64\!DRIVER_NAME!.dll sha1
 		IF !BUILD_ERRORLEVEL! NEQ 0 GOTO :EOF
 	)
 
@@ -554,7 +554,7 @@ GOTO :EOF
 GOTO :EOF
 
 :TryCopyGccBinaries
-	CALL :SafeCopy ..\libusb.a "!PACKAGE_ROOT_DIR!gcc\"
+	CALL :SafeCopy ..\!PACKAGE_NAME!.a "!PACKAGE_ROOT_DIR!gcc\"
 GOTO :EOF
 
 :SetDDK

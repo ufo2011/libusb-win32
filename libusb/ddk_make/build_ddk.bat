@@ -9,5 +9,5 @@ SET BUILD_ERRORLEVEL=0
 SET OUTDIR=build\%1\%2\%3\
 SET INTDIR=build\%2\%3\
 
-MSBuild ../projects/vs2019/libusb-win32.sln -m -t:%1 -p:IntDir=%~dp0%OUTDIR%;OutDir=%~dp0%INTDIR%;Configuration=%3;Platform=%2;BuildProjectReferences=false
+MSBuild ../projects/vs2019/libusb-win32.sln -m -t:%1 -p:IntDir=%~dp0%OUTDIR%;OutDir=%~dp0%INTDIR%;Configuration=%3;Platform=%2;BuildProjectReferences=false;PackageName=%PACKAGE_NAME%;DriverName=%DRIVER_NAME%
 IF %ERRORLEVEL% NEQ 0 SET BUILD_ERRORLEVEL=1

@@ -72,25 +72,25 @@ end;
 
 [Files]
 ; LibUsb-win32 x86 (Windows 7 and greater)
-Source: @PACKAGE_BIN_DIR@Release\x86\libusb0_x86.dll; DestName: libusb0.dll; DestDir: {sys}; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsX86;
-Source: @PACKAGE_BIN_DIR@Release\x86\libusb0.sys; DestDir: {sys}\drivers; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsX86;
+Source: @PACKAGE_BIN_DIR@Release\x86\@DRIVER_NAME@_x86.dll; DestName: @DRIVER_NAME@.dll; DestDir: {sys}; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsX86;
+Source: @PACKAGE_BIN_DIR@Release\x86\@DRIVER_NAME@.sys; DestDir: {sys}\drivers; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsX86;
 Source: @PACKAGE_BIN_DIR@Release\x86\install-filter.exe; DestDir: {app}\bin; Flags: ignoreversion; Check: IsX86;
 Source: @PACKAGE_BIN_DIR@Release\x86\install-filter-win.exe; DestDir: {app}\bin; Flags: ignoreversion; Check: IsX86;
 Source: @PACKAGE_BIN_DIR@Release\x86\testlibusb-win.exe; DestDir: {app}\bin; Flags: ignoreversion; Check: IsX86;
 Source: @PACKAGE_BIN_DIR@Release\x86\testlibusb.exe; DestDir: {app}\bin; Flags: ignoreversion; Check: IsX86;
 
 ; LibUsb-win32 AMD 64bit
-Source: @PACKAGE_BIN_DIR@Release\x86\libusb0_x86.dll; DestName: libusb0.dll; DestDir: {syswow64}; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsX64;
-Source: @PACKAGE_BIN_DIR@Release\amd64\libusb0.sys; DestDir: {sys}\drivers; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsX64;
-Source: @PACKAGE_BIN_DIR@Release\amd64\libusb0.dll; DestDir: {sys}; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsX64;
+Source: @PACKAGE_BIN_DIR@Release\x86\@DRIVER_NAME@_x86.dll; DestName: @DRIVER_NAME@.dll; DestDir: {syswow64}; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsX64;
+Source: @PACKAGE_BIN_DIR@Release\amd64\@DRIVER_NAME@.sys; DestDir: {sys}\drivers; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsX64;
+Source: @PACKAGE_BIN_DIR@Release\amd64\@DRIVER_NAME@.dll; DestDir: {sys}; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsX64;
 Source: @PACKAGE_BIN_DIR@Release\amd64\install-filter.exe; DestDir: {app}\bin; Flags: ignoreversion; Check: IsX64;
 Source: @PACKAGE_BIN_DIR@Release\amd64\install-filter-win.exe; DestDir: {app}\bin; Flags: ignoreversion; Check: IsX64;
 Source: @PACKAGE_BIN_DIR@Release\amd64\testlibusb-win.exe; DestDir: {app}\bin; Flags: ignoreversion; Check: IsX64;
 Source: @PACKAGE_BIN_DIR@Release\amd64\testlibusb.exe; DestDir: {app}\bin; Flags: ignoreversion; Check: IsX64;
 
 ; LibUsb-win32 ARM 64bit
-Source: @PACKAGE_BIN_DIR@Release\arm64\libusb0.sys; DestDir: {sys}\drivers; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsArm64;
-Source: @PACKAGE_BIN_DIR@Release\arm64\libusb0.dll; DestDir: {sys}; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsArm64;
+Source: @PACKAGE_BIN_DIR@Release\arm64\@DRIVER_NAME@.sys; DestDir: {sys}\drivers; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsArm64;
+Source: @PACKAGE_BIN_DIR@Release\arm64\@DRIVER_NAME@.dll; DestDir: {sys}; Flags: uninsneveruninstall replacesameversion restartreplace promptifolder; Check: IsArm64;
 Source: @PACKAGE_BIN_DIR@Release\arm64\install-filter.exe; DestDir: {app}\bin; Flags: ignoreversion; Check: IsArm64;
 Source: @PACKAGE_BIN_DIR@Release\arm64\install-filter-win.exe; DestDir: {app}\bin; Flags: ignoreversion; Check: IsArm64;
 Source: @PACKAGE_BIN_DIR@Release\arm64\testlibusb-win.exe; DestDir: {app}\bin; Flags: ignoreversion; Check: IsArm64;
@@ -131,7 +131,7 @@ Name: "{group}\Uninstall LibUsb-Win32"; Filename: {uninstallexe};
 Filename: "{app}\bin\install-filter-win.exe"; Description: "Launch filter installer wizard"; Flags: postinstall nowait runascurrentuser; Check: not WizardNoIcons; 
 
 [UninstallRun]
-Filename: "rundll32.exe"; RunOnceID:"FilterAllDeviceClasses"; Parameters: "libusb0,usb_install_np_rundll u -ac";
+Filename: "rundll32.exe"; RunOnceID:"FilterAllDeviceClasses"; Parameters: "@DRIVER_NAME@,usb_install_np_rundll u -ac";
 
 [Messages]
 StatusUninstalling=Uninstalling %1 and removing all class filters..
